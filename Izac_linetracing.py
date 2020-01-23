@@ -1,4 +1,3 @@
-
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import time
@@ -46,16 +45,21 @@ def Motor_Steer(speed, steering, stop=False):
 
 
 # Green Sign Detection_HY
-
 def make_cropped(img, orientation):   #orientation: True: counterclock wise 
     '''
     lower_orange = (0, 200, 200)
     upper_orange = (30, 255, 255)
-    '''
     
-    lower_green = (40, 100, 0)
-    upper_green = (70, 255, 200)
     '''
+    lower_green = (50, 100, 0)
+    upper_green = (70, 255, 200)
+    
+    '''
+    #si woo 's 
+    lower_green = (55, 90, 80)
+    upper_green =  (75, 120, 150)
+    
+
     lower_blue = (0, 180, 55)
     upper_blue = (20, 255, 200)
     '''
@@ -63,31 +67,28 @@ def make_cropped(img, orientation):   #orientation: True: counterclock wise
     #img = cv2.imread(img_path, cv2.IMREAD_COLOR)
     #cv2.imwrite("img_original.jpeg", img)
 
-    height = img.shape[0] 
-    height = int(height)
-    width = img.shape[1]
-    width = int(width)
-
-    img[int(height/4):height, :, :] = 0 
+    h = img.shape[0]
+    w = img.shape[1]
+    
 
     if(orientation == True) : 
-        img[:int(height/4), :int(width/3), :] = 0 
+        img_cropped = img[:int(h/4), int(w/2):] 
+    else:
+        img_cropped = img[:int(h/4), :int(w/2)] 
 
-    else: 
-        img[:int(height/4), int(width*2/3):, :] = 0 
-        
     
-    #
-    cv2.imwrite("half_black.jpeg", img)
 
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_hsv = cv2.cvtColor(img_cropped, cv2.COLOR_BGR2HSV)
     img_mask = cv2.inRange(img_hsv, lower_green, upper_green)
-    img_green_only = cv2.bitwise_and(img, img, mask =img_mask)
+    img_green_only = cv2.bitwise_and(img_cropped, img_cropped, mask =img_mask)
     
+
     cv2.imwrite("result_green_only.jpeg", img_green_only)
     img_gray = cv2.cvtColor(img_green_only, cv2.COLOR_BGR2GRAY)
 
-    ret, img_binary = cv2.threshold(img_gray, 40, 255, cv2.THRESH_BINARY)
+    
+    
+    ret, img_binary = cv2.threshold(img_gray, 40, 255, cv2.THRESH_BINARY) #40 
     cv2.imwrite("result_binary.jpeg", img_binary)
     
 
@@ -99,13 +100,7 @@ def make_cropped(img, orientation):   #orientation: True: counterclock wise
         area = cv2.contourArea(c) 
         x,y,w,h = cv2.boundingRect(c)
         #print(area)
-        '''
-        print("\n")
-        print(area)
-        x,y,w,h = cv2.boundingRect(c)
-        print(w/h)
-        print('\n')
-        '''
+  
         
         img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),1)
         cv2.imwrite('rrrrr.jpeg', img)
@@ -113,7 +108,7 @@ def make_cropped(img, orientation):   #orientation: True: counterclock wise
         if(area<2000) : 
             if(area>100): #200
                 print(w/h)
-                if(w/h>1.2):
+                if(w/h>1):
                     if(w/h<3.5): 
                         tmp_con.append(c)
        
@@ -124,35 +119,10 @@ def make_cropped(img, orientation):   #orientation: True: counterclock wise
     #print(len(tmp_con))
 
     if(len(tmp_con)!=0 ) :
-
-        for c in contours: 
-            area = cv2.contourArea(c)
-            print(area)
-
-            x,y,w,h = cv2.boundingRect(c)
-            img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),1)
-            cv2.imwrite('rrrrr.jpeg', img)
-            
-            if(area> max_area):
-                max_area = area 
-                max_con = c 
-
-        x,y,w,h = cv2.boundingRect(max_con)
-
-        if(w/h >1.25):
-            #cropped = img[y:y+h, x:x+w]
-            #cv2.imwrite('rrrrr.jpeg', cropped)
-            #print("Hello")
-            return 1
-
-        else: 
-            return 0 
+        return 0 
     
     else: 
         return 0
-
-
-
 
 
 # Line following parameters
@@ -191,7 +161,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     
     # Detect Green sign
-    result = make_cropped(image,True)
+    result = make_cropped(image, True)
     if (result == 1):
         print(" # %d : Yes! Detected! \n")
 
@@ -245,7 +215,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         setpoint = 160
         error = int(x_min - setpoint)
         ang = int(ang)
-
+        
+        mmode_flag = False 
         # Move Motors
         if mmode_flag:
             Motor_Steer(0.4, (error * kp) + (ang * ap), True)
