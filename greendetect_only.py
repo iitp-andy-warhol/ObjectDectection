@@ -1,31 +1,5 @@
 import cv2
 import numpy as np
-#import matplotlib.pyplot as plt
-#from keras.models import load_model 
-
-
-def CalConti(current_num, prev_num, prev_conti_0, prev_conti_1): 
-
-    if current_num == 0 :  
-        if prev_num== 0: 
-            current_conti_0 = 1+ prev_conti_0 
-            current_conti_1 = 0 
-
-        elif prev_num == 1: 
-            current_conti_0 = 0 
-            current_conti_1 = 1 + prev_conti_1 
-
-    elif current_num == 1: 
-        if prev_num == 0 : 
-            current_conti_0 = 1+ prev_conti_0 
-            current_conti_1 = 0 
-
-        elif prev_num ==1: 
-            current_conti_0 = 0 
-            current_conti_1 = 1 + prev_conti_1
-
-    return  current_conti_0, current_conti_1 
-
 
 
 def make_cropped(img): 
@@ -103,8 +77,7 @@ def make_cropped(img):
 
             x,y,w,h = cv2.boundingRect(c)
             img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),1)
-            cv2.imwrite('rrrrr.jpeg', img)
-            
+                        
             if(area> max_area):
                 max_area = area 
                 max_con = c 
@@ -144,20 +117,7 @@ for i in range(270):
     if(ret==1): 
         f.write(str(frame_num) +' '+ "Detected!\n" )
 
-    '''
-    current_conti_0, current_conti_1 = CalConti(ret, prev_num, prev_conti_0, prev_conti_1)
-
-    if current_conti_1 >=9:
-        f.write(str(frame_num) +' '+ "Detected!\n" )
-
-    prev_num = ret
-    prev_conti_0 = current_conti_0
-    prev_conti_1 = current_conti_1
-    
-    ''
-
-
-
+'''  
 frame_num =str(82)
 #print(frame_num)
 img_path = "./images/frame"+ frame_num+ ".jpg"
