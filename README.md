@@ -6,8 +6,6 @@ Andy Warhol : Make a Autonomous Driving Robot
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
 ```
 python3
 opencv-python
@@ -15,8 +13,9 @@ numpy
 ```
 
 ## Running the tests
-
+```
 python3 greendetect_only.py 
+```
 
 ### Break down into end to end tests
 ```
