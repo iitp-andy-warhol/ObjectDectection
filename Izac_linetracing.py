@@ -42,7 +42,28 @@ def Motor_Steer(speed, steering, stop=False):
         kit.continuous_servo[0].throttle = speed * steering / 100
         kit.continuous_servo[1].throttle = -1 * speed
         return
+#####by HY 
+def CalConti(current_num, prev_num, prev_conti_0, prev_conti_1): 
 
+    if current_num == 0 :  
+        if prev_num== 0: 
+            current_conti_0 = 1+ prev_conti_0 
+            current_conti_1 = 0 
+
+        elif prev_num == 1: 
+            current_conti_0 = 0 
+            current_conti_1 = 1 + prev_conti_1 
+
+    elif current_num == 1: 
+        if prev_num == 0 : 
+            current_conti_0 = 1+ prev_conti_0 
+            current_conti_1 = 0 
+
+        elif prev_num ==1: 
+            current_conti_0 = 0 
+            current_conti_1 = 1 + prev_conti_1
+
+    return  current_conti_0, current_conti_1 
 
 # Green Sign Detection_HY
 def make_cropped(img, orientation):   #orientation: True: counterclock wise 
@@ -93,7 +114,7 @@ def make_cropped(img, orientation):   #orientation: True: counterclock wise
     
 
     #_,contours, _ = cv2.findContours(img_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
-    _,contours, _ = cv2.findContours(img_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
+    contours, _ = cv2.findContours(img_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
   
     tmp_con = [] 
     for c in contours: 
@@ -134,6 +155,10 @@ ap = 1.0  # off angle
 # fourcc = cv2.VideoWriter_fourcc(*'DIVX')
 # out = cv2.VideoWriter(videoFile1, fourcc, 9.0, (320,240))
 
+current_num = 0 
+prev_num = 0 
+prev_conti_0 = 0
+prev_conti_1 =0
 
 # Main Loop
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -161,13 +186,24 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     
     # Detect Green sign
+
     result = make_cropped(image, True)
+    current_conti_0, current_conti_1 = CalConti(result, prev_num, prev_conti_0, prev_conti_1)
+
+    if current_conti_1 >=3:
+        print("detected!")
+    prev_num = result
+    prev_conti_0 = current_conti_0
+    prev_conti_1 = current_conti_1
+
+
+    '''
     if (result == 1):
         print(" # %d : Yes! Detected! \n")
 
     elif (result == 0):
         print(" # %d : NO!\n")
-
+    '''
     
     # Detect Stop sign
     if len(contours_red) > 0:
